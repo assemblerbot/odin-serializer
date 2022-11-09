@@ -16,11 +16,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using OdinSerializer;
+using Sirenix.Serialization;
 
 [assembly: RegisterDictionaryKeyPathProvider(typeof(Vector4DictionaryKeyPathProvider))]
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
     using System.Globalization;
     using UnityEngine;

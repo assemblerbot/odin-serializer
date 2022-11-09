@@ -15,7 +15,7 @@
 // limitations under the License.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     using System;
     using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace OdinSerializer.Utilities
     /// <summary>
     /// Garbage free enumerator methods.
     /// </summary>
-    public static class GarbageFreeIterators
+    internal static class GarbageFreeIterators
     {
         /// <summary>
         /// Garbage free enumerator for lists.

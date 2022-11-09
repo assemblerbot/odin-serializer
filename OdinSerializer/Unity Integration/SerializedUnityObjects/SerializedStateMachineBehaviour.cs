@@ -16,17 +16,15 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer
+namespace Sirenix.OdinInspector
 {
+    using Sirenix.Serialization;
     using UnityEngine;
 
     /// <summary>
     /// A Unity StateMachineBehaviour which is serialized by the Sirenix serialization system.
     /// </summary>
-#if ODIN_INSPECTOR
     [Sirenix.OdinInspector.ShowOdinSerializedPropertiesInInspector]
-#endif
-
     public abstract class SerializedStateMachineBehaviour : StateMachineBehaviour, ISerializationCallbackReceiver
     {
         [SerializeField, HideInInspector]
@@ -57,5 +55,15 @@ namespace OdinSerializer
         protected virtual void OnBeforeSerialize()
         {
         }
+
+#if UNITY_EDITOR
+
+        [OnInspectorGUI, PropertyOrder(int.MinValue)]
+        private void InternalOnInspectorGUI()
+        {
+            EditorOnlyModeConfigUtility.InternalOnInspectorGUI(this);
+        }
+
+#endif
     }
 }

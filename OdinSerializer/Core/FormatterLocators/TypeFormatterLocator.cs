@@ -16,11 +16,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using OdinSerializer;
+using Sirenix.Serialization;
 
 [assembly: RegisterFormatterLocator(typeof(TypeFormatterLocator), -70)]
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
     using System;
 

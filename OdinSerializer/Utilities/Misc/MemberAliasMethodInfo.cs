@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     using System;
     using System.Globalization;
@@ -31,7 +31,7 @@ namespace OdinSerializer.Utilities
     /// The name that we return is "parentname+methodName".
     /// </summary>
     /// <seealso cref="System.Reflection.FieldInfo" />
-    public sealed class MemberAliasMethodInfo : MethodInfo
+    internal sealed class MemberAliasMethodInfo : MethodInfo
     {
         /// <summary>
         /// The default fake name separator string.

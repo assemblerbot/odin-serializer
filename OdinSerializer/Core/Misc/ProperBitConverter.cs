@@ -21,7 +21,7 @@
 
 using System.Globalization;
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
     using System;
     using System.Runtime.InteropServices;

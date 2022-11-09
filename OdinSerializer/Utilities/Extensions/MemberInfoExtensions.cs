@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     using System;
     using System.Collections.Generic;
@@ -27,7 +27,7 @@ namespace OdinSerializer.Utilities
     /// <summary>
     /// MemberInfo method extensions.
     /// </summary>
-    public static class MemberInfoExtensions
+    internal static class MemberInfoExtensions
     {
         /// <summary>
         /// Returns true if the attribute whose type is specified by the generic argument is defined on this member

@@ -24,7 +24,7 @@
 #define CAN_EMIT
 #endif
 
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     using System;
     using System.Reflection;
@@ -38,39 +38,39 @@ namespace OdinSerializer.Utilities
     /// <summary>
     /// Not yet documented.
     /// </summary>
-    public delegate object WeakValueGetter(ref object instance);
+    internal delegate object WeakValueGetter(ref object instance);
 
     /// <summary>
     /// Not yet documented.
     /// </summary>
-    public delegate void WeakValueSetter(ref object instance, object value);
+    internal delegate void WeakValueSetter(ref object instance, object value);
 
     /// <summary>
     /// Not yet documented.
     /// </summary>
-    public delegate FieldType WeakValueGetter<FieldType>(ref object instance);
+    internal delegate FieldType WeakValueGetter<FieldType>(ref object instance);
 
     /// <summary>
     /// Not yet documented.
     /// </summary>
-    public delegate void WeakValueSetter<FieldType>(ref object instance, FieldType value);
+    internal delegate void WeakValueSetter<FieldType>(ref object instance, FieldType value);
 
     /// <summary>
     /// Not yet documented.
     /// </summary>
-    public delegate FieldType ValueGetter<InstanceType, FieldType>(ref InstanceType instance);
+    internal delegate FieldType ValueGetter<InstanceType, FieldType>(ref InstanceType instance);
 
     /// <summary>
     /// Not yet documented.
     /// </summary>
-    public delegate void ValueSetter<InstanceType, FieldType>(ref InstanceType instance, FieldType value);
+    internal delegate void ValueSetter<InstanceType, FieldType>(ref InstanceType instance, FieldType value);
 
     /// <summary>
     /// Provides utilities for using the <see cref="System.Reflection.Emit"/> namespace.
     /// <para />
     /// This class is due for refactoring. Use at your own peril.
     /// </summary>
-    public static class EmitUtilities
+    internal static class EmitUtilities
     {
         /// <summary>
         /// Gets a value indicating whether emitting is supported on the current platform.

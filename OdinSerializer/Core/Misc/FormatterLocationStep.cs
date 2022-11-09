@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
     public enum FormatterLocationStep
     {

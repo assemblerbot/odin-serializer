@@ -16,13 +16,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using OdinSerializer;
+using Sirenix.Serialization;
 
 [assembly: RegisterFormatter(typeof(QueueFormatter<,>), weakFallback: typeof(WeakQueueFormatter))]
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
-    using Utilities;
+    using Sirenix.Serialization.Utilities;
     using System;
     using System.Collections;
     using System.Collections.Generic;

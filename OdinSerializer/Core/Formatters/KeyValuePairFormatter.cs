@@ -16,11 +16,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using OdinSerializer;
+using Sirenix.Serialization;
 
 [assembly: RegisterFormatter(typeof(KeyValuePairFormatter<,>), weakFallback: typeof(WeakKeyValuePairFormatter))]
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
     using System;
     using System.Collections.Generic;

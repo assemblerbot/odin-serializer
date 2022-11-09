@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
     using System;
     using System.Collections.Generic;

@@ -7,101 +7,91 @@
     <ProjectGuid>{F1111936-6086-412C-AB26-D7D8D3448A2A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OdinSerializer</RootNamespace>
-    <AssemblyName>OdinSerializer</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <RootNamespace>Sirenix.Serialization</RootNamespace>
+    <AssemblyName>Sirenix.Serialization</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
-    <ProjectTypeGuids>{E097FAD1-6243-4DAD-9C02-E9B9EFC3FFC1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>portable</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\Unity Project\Assets\Plugins\Sirenix\Assemblies\</OutputPath>
+    <DefineConstants>UNITY_5_3_OR_NEWER;UNITY_5_3;DEBUG;CAN_EMIT;UNITY_EDITOR;ODIN_INSPECTOR;SIRENIX_INTERNAL;ENABLE_PROFILER</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>..\..\Unity Project\Assets\Plugins\Sirenix\Assemblies\Sirenix.Serialization.xml</DocumentationFile>
+    <NoWarn>CS1723, CS1723, CS1574, CS1584, CS1658, CS1591</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>portable</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\Unity Project\Assets\Plugins\Sirenix\Assemblies\</OutputPath>
+    <DefineConstants>UNITY_5_3_OR_NEWER;UNITY_5_3;DEBUG;CAN_EMIT;UNITY_EDITOR;ODIN_INSPECTOR;SIRENIX_INTERNAL;ENABLE_PROFILER</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DocumentationFile>..\..\Unity Project\Assets\Plugins\Sirenix\Assemblies\Sirenix.Serialization.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <RunPostBuildEvent>Always</RunPostBuildEvent>
+    <IntermediateOutputPath>$(ProjectDir)..\ignore\</IntermediateOutputPath>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Editor|AnyCPU'">
-    <OutputPath>..\Build\Assets\Plugins\Sirenix\Odin Serializer\EditorOnly\</OutputPath>
-    <DefineConstants>DEBUG;CAN_EMIT;UNITY_EDITOR;ENABLE_PROFILER</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>CS1723, CS1723, CS1574, CS1584, CS1658</NoWarn>
-    <DocumentationFile>..\Build\Assets\Plugins\Sirenix\Odin Serializer\EditorOnly\OdinSerializer.xml</DocumentationFile>
-    <LangVersion>4</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <DebugType>pdbonly</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release Editor|AnyCPU'">
-    <OutputPath>..\Build\Assets\Plugins\Sirenix\Odin Serializer\EditorOnly\</OutputPath>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <NoWarn>CS1723, CS1723, CS1574, CS1584, CS1658</NoWarn>
-    <DefineConstants>DEBUG;CAN_EMIT;UNITY_EDITOR;ENABLE_PROFILER</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <DocumentationFile>..\Build\Assets\Plugins\Sirenix\Odin Serializer\EditorOnly\OdinSerializer.xml</DocumentationFile>
-    <LangVersion>4</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <DebugType>pdbonly</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release JIT|AnyCPU'">
-    <OutputPath>..\Build\Assets\Plugins\Sirenix\Odin Serializer\JIT\</OutputPath>
-    <NoWarn>CS1723, CS1723, CS1574, CS1584, CS1658</NoWarn>
-    <DefineConstants>CAN_EMIT</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>
-    </DocumentationFile>
-    <Optimize>true</Optimize>
-    <LangVersion>4</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <DebugType>pdbonly</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release AOT|AnyCPU'">
-    <OutputPath>..\Build\Assets\Plugins\Sirenix\Odin Serializer\AOT\</OutputPath>
-    <NoWarn>CS1723, CS1723, CS1574, CS1584, CS1658</NoWarn>
-    <DefineConstants>
-    </DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DocumentationFile>
-    </DocumentationFile>
-    <Optimize>true</Optimize>
-    <LangVersion>4</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <DebugType>pdbonly</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="UnityEditor">
-      <HintPath>..\Libraries\Unity\UnityEditor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>..\Libraries\Unity\UnityEngine.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\Libraries\Unity\UnityEngine.CoreModule.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.AnimationModule">
-      <HintPath>..\Libraries\Unity\UnityEngine.AnimationModule.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
   <ItemGroup>
     <Compile Include="*.cs;.\**\*.cs" />
     <Compile Remove="obj\**" />
   </ItemGroup>
-  <ItemGroup />
-  <Import Project="..\Libraries\MSBuild\15.0\Bin\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>call "$(SolutionDir)Libraries\PDB2MDB\pdb2mdb.exe" "$(TargetPath)"
-call del /a "$(TargetDir)*.pdb*"</PostBuildEvent>
-  </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\Sirenix Solution\Sirenix.OdinInspector.Attributes\Sirenix.OdinInspector.Attributes.csproj">
+      <Project>{789e79dc-5862-4757-b80e-0117fbdc4ae6}</Project>
+      <Name>Sirenix.OdinInspector.Attributes</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Sirenix Solution\Sirenix.Serialization.Config\Sirenix.Serialization.Config.csproj">
+      <Project>{c99e46bb-8897-48b0-ab34-8a98ffd89694}</Project>
+      <Name>Sirenix.Serialization.Config</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Sirenix Solution\Sirenix.Utilities\Sirenix.Utilities.csproj">
+      <Project>{22731b01-1f5d-477a-811c-df6f1e873a2a}</Project>
+      <Name>Sirenix.Utilities</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="UnityEditor">
+      <HintPath>..\..\Sirenix Solution\Libraries\UnityEditor.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\Sirenix Solution\Libraries\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\..\Sirenix Solution\Libraries\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>..\..\Sirenix Solution\Libraries\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="UnityEngine.AnimationModule">
+      <HintPath>..\..\Sirenix Solution\Libraries\UnityEngine.AnimationModule.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>..\..\Sirenix Solution\Libraries\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

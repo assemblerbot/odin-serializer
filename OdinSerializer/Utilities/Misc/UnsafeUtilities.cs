@@ -15,7 +15,7 @@
 // limitations under the License.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace OdinSerializer.Utilities.Unsafe
+namespace Sirenix.Serialization.Utilities.Unsafe
 {
     using System;
     using System.Runtime.InteropServices;
@@ -23,7 +23,7 @@ namespace OdinSerializer.Utilities.Unsafe
     /// <summary>
     /// Contains utilities for performing common unsafe operations.
     /// </summary>
-    public static class UnsafeUtilities
+    internal static class UnsafeUtilities
     {
         /// <summary>
         /// Blindly creates an array of structs from an array of bytes via direct memory copy/blit.

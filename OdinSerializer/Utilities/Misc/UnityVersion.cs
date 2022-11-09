@@ -15,7 +15,7 @@
 // limitations under the License.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     using UnityEngine;
 
@@ -26,7 +26,7 @@ namespace OdinSerializer.Utilities
 
     [UnityEditor.InitializeOnLoad]
 #endif
-    public static class UnityVersion
+    internal static class UnityVersion
     {
         static UnityVersion()
         {

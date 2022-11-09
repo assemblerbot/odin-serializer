@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     using System;
     using System.Reflection;
@@ -24,7 +24,7 @@ namespace OdinSerializer.Utilities
     /// <summary>
     /// PropertyInfo method extensions.
     /// </summary>
-    public static class PropertyInfoExtensions
+    internal static class PropertyInfoExtensions
     {
         /// <summary>
         /// Determines whether a property is an auto property with a usable getter and setter.

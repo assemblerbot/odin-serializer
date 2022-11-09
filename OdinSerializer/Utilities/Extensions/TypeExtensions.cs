@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     using System;
     using System.Collections.Generic;
@@ -29,7 +29,7 @@ namespace OdinSerializer.Utilities
     /// <summary>
     /// Type method extensions.
     /// </summary>
-    public static class TypeExtensions
+    internal static class TypeExtensions
     {
         private static readonly Func<float, float, bool> FloatEqualityComparerFunc = FloatEqualityComparer;
         private static readonly Func<double, double, bool> DoubleEqualityComparerFunc = DoubleEqualityComparer;

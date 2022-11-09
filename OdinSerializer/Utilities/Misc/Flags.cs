@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     using System;
     using System.Collections.Generic;
@@ -27,7 +27,7 @@ namespace OdinSerializer.Utilities
     /// <summary>
     /// This class encapsulates common <see cref="BindingFlags"/> combinations.
     /// </summary>
-    public static class Flags
+    internal static class Flags
     {
         /// <summary>
         /// Search criteria encompassing all public and non-public members, including base members.

@@ -16,11 +16,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using OdinSerializer;
+using Sirenix.Serialization;
 
 [assembly: RegisterFormatter(typeof(GradientColorKeyFormatter))]
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
     using UnityEngine;
 

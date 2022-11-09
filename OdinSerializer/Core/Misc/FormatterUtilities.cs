@@ -16,10 +16,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
     using System.Globalization;
-    using OdinSerializer.Utilities;
+    using Sirenix.Serialization.Utilities;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -337,8 +337,12 @@ You probably need to assign the nullValue variable of the {0} script in the insp
 
         /// <summary>
         /// Gets an aliased version of a member, with the declaring type name included in the member name, so that there are no conflicts with private fields and properties with the same name in different classes in the same inheritance hierarchy.
+        /// <para/>
+        /// Marked internal in Odin because this method MUST NOT BE CALLED FROM ODIN'S INSPECTOR CODE.
+        /// Odin has its own version of this, and there must be no conflict. These aliases must not be
+        /// mixed into Odin's own. Use InspectorPropertyInfoUtility.GetPrivateMemberAlias instead.
         /// </summary>
-        public static MemberInfo GetPrivateMemberAlias(MemberInfo member, string prefixString = null, string separatorString = null)
+        internal static MemberInfo GetPrivateMemberAlias(MemberInfo member, string prefixString = null, string separatorString = null)
         {
             if (member is FieldInfo)
             {

@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
     /// <summary>
     /// Serializer for the <see cref="int"/> type.

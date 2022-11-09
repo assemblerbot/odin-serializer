@@ -15,9 +15,9 @@
 // limitations under the License.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
-    using OdinSerializer.Utilities;
+    using Sirenix.Serialization.Utilities;
     using System;
     using System.Collections;
     using System.Collections.Generic;

@@ -15,16 +15,14 @@
 // limitations under the License.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
-    using System;
     using System.IO;
-    using System.Text;
 
     /// <summary>
     /// DirectoryInfo method extensions.
     /// </summary>
-    public static class PathUtilities
+    internal static class PathUtilities
     {
         /// <summary>
         /// Determines whether the directory has a given directory in its hierarchy of children.

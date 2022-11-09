@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     using System;
     using System.Globalization;
@@ -25,7 +25,7 @@ namespace OdinSerializer.Utilities
     /// <summary>
     /// String method extensions.
     /// </summary>
-    public static class StringExtensions
+    internal static class StringExtensions
     {
         /// <summary>
         /// Eg MY_INT_VALUE => MyIntValue

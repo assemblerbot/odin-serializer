@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     using System;
     using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace OdinSerializer.Utilities
     /// <summary>
     /// Various LinQ extensions.
     /// </summary>
-    public static class LinqExtensions
+    internal static class LinqExtensions
     {
         /// <summary>
         /// Perform an action on each item.

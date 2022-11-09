@@ -20,9 +20,9 @@
 #define CAN_EMIT
 #endif
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
-    using OdinSerializer.Utilities;
+    using Sirenix.Serialization.Utilities;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -50,12 +50,12 @@ namespace OdinSerializer
         /// <summary>
         /// The name of the pre-generated assembly that contains pre-emitted formatters for use on AOT platforms where emitting is not supported. Note that this assembly is not always present.
         /// </summary>
-        public const string PRE_EMITTED_ASSEMBLY_NAME = "OdinSerializer.AOTGenerated";
+        public const string PRE_EMITTED_ASSEMBLY_NAME = "Sirenix.Serialization.AOTGenerated";
 
         /// <summary>
         /// The name of the runtime-generated assembly that contains runtime-emitted formatters for use on non-AOT platforms where emitting is supported. Note that this assembly is not always present.
         /// </summary>
-        public const string RUNTIME_EMITTED_ASSEMBLY_NAME = "OdinSerializer.RuntimeEmitted";
+        public const string RUNTIME_EMITTED_ASSEMBLY_NAME = "Sirenix.Serialization.RuntimeEmitted";
 
         /// <summary>
         /// Base type for all AOT-emitted formatters.

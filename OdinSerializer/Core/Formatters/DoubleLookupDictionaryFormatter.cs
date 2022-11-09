@@ -16,13 +16,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using OdinSerializer;
+using Sirenix.Serialization;
 
 [assembly: RegisterFormatter(typeof(DoubleLookupDictionaryFormatter<,,>), weakFallback: typeof(WeakDoubleLookupDictionaryFormatter))]
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
-    using OdinSerializer.Utilities;
+    using Sirenix.Serialization.Utilities;
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -33,7 +33,7 @@ namespace OdinSerializer
     /// <typeparam name="TPrimary">Type of primary key.</typeparam>
     /// <typeparam name="TSecondary">Type of secondary key.</typeparam>
     /// <typeparam name="TValue">Type of value.</typeparam>
-    public sealed class DoubleLookupDictionaryFormatter<TPrimary, TSecondary, TValue> : BaseFormatter<DoubleLookupDictionary<TPrimary, TSecondary, TValue>>
+    internal sealed class DoubleLookupDictionaryFormatter<TPrimary, TSecondary, TValue> : BaseFormatter<DoubleLookupDictionary<TPrimary, TSecondary, TValue>>
     {
         private static readonly Serializer<TPrimary> PrimaryReaderWriter = Serializer.Get<TPrimary>();
         private static readonly Serializer<Dictionary<TSecondary, TValue>> InnerReaderWriter = Serializer.Get<Dictionary<TSecondary, TValue>>();

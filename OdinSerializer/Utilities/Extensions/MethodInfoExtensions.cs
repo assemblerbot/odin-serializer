@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     using System;
     using System.Linq;
@@ -27,7 +27,7 @@ namespace OdinSerializer.Utilities
     /// <summary>
     /// Various extensions for MethodInfo.
     /// </summary>
-    public static class MethodInfoExtensions
+    internal static class MethodInfoExtensions
     {
         /// <summary>
         /// Returns the specified method's full name "methodName(argType1 arg1, argType2 arg2, etc)"

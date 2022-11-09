@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     using System;
     using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace OdinSerializer.Utilities
     /// <summary>
     /// Compares objects by reference only, ignoring equality operators completely. This is used by the property tree reference dictionaries to keep track of references.
     /// </summary>
-    public class ReferenceEqualityComparer<T> : IEqualityComparer<T> where T : class
+    internal class ReferenceEqualityComparer<T> : IEqualityComparer<T> where T : class
     {
         /// <summary>
         /// A default, cached instance of this generic variant of the reference equality comparer.

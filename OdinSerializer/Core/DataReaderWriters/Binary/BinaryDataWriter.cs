@@ -16,10 +16,10 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
-    using OdinSerializer.Utilities;
-    using OdinSerializer.Utilities.Unsafe;
+    using Sirenix.Serialization.Utilities;
+    using Sirenix.Serialization.Utilities.Unsafe;
     using System;
     using System.Collections.Generic;
     using System.IO;

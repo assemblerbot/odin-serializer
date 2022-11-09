@@ -16,11 +16,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using OdinSerializer;
+using Sirenix.Serialization;
 
 [assembly: RegisterFormatter(typeof(NullableFormatter<>), weakFallback: typeof(WeakNullableFormatter))]
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
     using System;
 

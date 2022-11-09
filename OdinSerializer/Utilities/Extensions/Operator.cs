@@ -15,13 +15,13 @@
 // limitations under the License.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     /// <summary>
     /// Determines the type of operator.
     /// </summary>
     /// <seealso cref="TypeExtensions" />
-    public enum Operator
+    internal enum Operator
     {
         /// <summary>
         /// The == operator.

@@ -16,11 +16,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using OdinSerializer;
+using Sirenix.Serialization;
 
 [assembly: RegisterFormatter(typeof(CoroutineFormatter))]
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
     using System;
     using UnityEngine;

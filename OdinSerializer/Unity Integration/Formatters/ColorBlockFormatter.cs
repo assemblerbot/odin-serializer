@@ -16,11 +16,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using OdinSerializer;
+using Sirenix.Serialization;
 
 [assembly: RegisterFormatterLocator(typeof(ColorBlockFormatterLocator))]
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
     using System;
     using System.Reflection;

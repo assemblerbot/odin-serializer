@@ -18,9 +18,9 @@
 
 #if UNITY_EDITOR
 
-namespace OdinSerializer.Editor
+namespace Sirenix.Serialization.Editor
 {
-    using OdinSerializer.Utilities;
+    using Sirenix.Serialization.Utilities;
     using System;
     using System.Collections.Generic;
     using System.IO;

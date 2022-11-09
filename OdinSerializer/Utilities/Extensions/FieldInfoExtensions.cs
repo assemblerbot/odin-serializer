@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     using System;
     using System.Reflection;
@@ -24,7 +24,7 @@ namespace OdinSerializer.Utilities
     /// <summary>
     /// FieldInfo method extensions.
     /// </summary>
-    public static class FieldInfoExtensions
+    internal static class FieldInfoExtensions
     {
         /// <summary>
         /// Determines whether the specified field is an alias.

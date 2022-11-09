@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
     /// <summary>
     /// Contains various string constants used by the <see cref="JsonDataWriter"/>, <see cref="JsonDataReader"/> and <see cref="JsonTextReader"/> classes.

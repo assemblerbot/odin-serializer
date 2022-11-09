@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     using System;
     using System.Reflection;
@@ -24,7 +24,7 @@ namespace OdinSerializer.Utilities
     /// <summary>
     /// Extends various Unity classes.
     /// </summary>
-    public static class UnityExtensions
+    internal static class UnityExtensions
     {
         private static readonly ValueGetter<UnityEngine.Object, IntPtr> UnityObjectCachedPtrFieldGetter;
 

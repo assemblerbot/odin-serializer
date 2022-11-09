@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     using System;
     using System.Globalization;
@@ -28,7 +28,7 @@ namespace OdinSerializer.Utilities
     /// We aggregate the FieldInfo associated with this member and return a mangled form of the name.
     /// </summary>
     /// <seealso cref="System.Reflection.FieldInfo" />
-    public sealed class MemberAliasFieldInfo : FieldInfo
+    internal sealed class MemberAliasFieldInfo : FieldInfo
     {
         /// <summary>
         /// The default fake name separator string.

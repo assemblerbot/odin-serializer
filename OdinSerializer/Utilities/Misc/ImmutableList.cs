@@ -15,7 +15,7 @@
 // limitations under the License.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace OdinSerializer.Utilities
+namespace Sirenix.Serialization.Utilities
 {
     using System;
     using System.Collections;
@@ -25,14 +25,14 @@ namespace OdinSerializer.Utilities
     /// <summary>
     /// Interface for immutable list.
     /// </summary>
-    public interface IImmutableList : IList
+    internal interface IImmutableList : IList
     {
     }
 
     /// <summary>
     /// Interface for generic immutable list.
     /// </summary>
-    public interface IImmutableList<T> : IImmutableList, IList<T>
+    internal interface IImmutableList<T> : IImmutableList, IList<T>
     {
         /// <summary>
         /// Index accessor.
@@ -44,7 +44,7 @@ namespace OdinSerializer.Utilities
     /// Immutable list wraps another list, and allows for reading the inner list, without the ability to change it.
     /// </summary>
     [Serializable]
-    public sealed class ImmutableList : IImmutableList<object>
+    internal sealed class ImmutableList : IImmutableList<object>
     {
         [SerializeField]
         private IList innerList;

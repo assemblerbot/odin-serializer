@@ -16,11 +16,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using OdinSerializer;
+using Sirenix.Serialization;
 
 [assembly: RegisterFormatter(typeof(DateTimeOffsetFormatter))]
 
-namespace OdinSerializer
+namespace Sirenix.Serialization
 {
     using System.Globalization;
     using System;
