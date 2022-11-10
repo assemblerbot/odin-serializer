@@ -587,22 +587,24 @@ namespace Sirenix.Serialization
         /// </summary>
         public static void SerializeUnityObject(UnityEngine.Object unityObject, ref SerializationData data, bool serializeUnityFields = false, SerializationContext context = null)
         {
-#if UNITY_EDITOR
-            if (data.IsPrefabInstance)
-            {
-                // Odin prefab instances using the new prefab support should never be serialized in the editor,
-                // except when we are in play mode where they are not actually prefabs and need to be able to be
-                // modified and then instantiated.
-
-                if (!IsMainUnityThread) return; // We can't even check if we are in play mode, so assume the worst and do nothing
-                if (!Application.isPlaying) return; // We are not in play mode, so don't do anything
-            }
-#endif
-
             if (unityObject == null)
             {
                 throw new ArgumentNullException("unityObject");
             }
+
+#if UNITY_EDITOR
+            // Odin prefab instances using the new prefab support should never be serialized in the editor,
+            // except when we are in play mode where they are not actually prefabs and need to be able to be
+            // modified and then instantiated.
+            if (IsMainUnityThread)
+            {
+                if (!Application.isPlaying && data.IsPrefabInstance) return;
+            }
+            else
+            {
+                if (data.IsPrefabInstance) return; // We can't even check if we are in play mode, so assume the worst and do nothing
+            }
+#endif
 
 #if UNITY_EDITOR
 
@@ -1053,6 +1055,7 @@ namespace Sirenix.Serialization
 
         private static void SetUnityObjectModifications(UnityEngine.Object unityObject, ref SerializationData data, UnityEngine.Object prefab)
         {
+            return;
             //
             // We need to set the modifications to the prefab instance manually,
             // to ensure that Unity gets it right and doesn't mess with them.
