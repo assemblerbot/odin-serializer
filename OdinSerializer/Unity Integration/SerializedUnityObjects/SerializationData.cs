@@ -100,7 +100,8 @@ namespace Sirenix.Serialization
                     this.SerializedBytes != null &&
                     this.SerializationNodes != null &&
                     this.PrefabModifications != null &&
-                    this.ReferencedUnityObjects != null;
+                    this.ReferencedUnityObjects != null &&
+                    this.PrefabModificationLayers != null;
             }
         }
 
@@ -133,6 +134,12 @@ namespace Sirenix.Serialization
         /// </summary>
         [SerializeField]
         public List<SerializationNode> SerializationNodes;
+
+        [SerializeField]
+        public bool IsPrefabInstance;
+
+        [SerializeField]
+        public List<PrefabModificationLayer> PrefabModificationLayers;
 
         /// <summary>
         /// Resets all data.
@@ -173,5 +180,12 @@ namespace Sirenix.Serialization
                 this.PrefabModifications.Clear();
             }
         }
+    }
+
+    [Serializable]
+    public struct PrefabModificationLayer
+    {
+        public List<UnityEngine.Object> ReferencedUnityObjects;
+        public List<string> Modifications;
     }
 }

@@ -16,7 +16,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-//#define PREFAB_DEBUG
+#define PREFAB_DEBUG
 
 namespace Sirenix.Serialization
 {
@@ -54,6 +54,15 @@ namespace Sirenix.Serialization
         private static readonly Assembly HashSet_Assembly = typeof(HashSet<>).Assembly;
         private static readonly Assembly LinkedList_Assembly = typeof(LinkedList<>).Assembly;
 
+        private static System.Threading.Thread MainUnityThread;
+
+        public static bool IsMainUnityThread { get { return System.Threading.Thread.CurrentThread == MainUnityThread; } }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        private static void GetMainThread()
+        {
+            MainUnityThread = System.Threading.Thread.CurrentThread;
+        }
 
 #if UNITY_EDITOR        
         private static bool isDoingDomainReload;
@@ -578,6 +587,18 @@ namespace Sirenix.Serialization
         /// </summary>
         public static void SerializeUnityObject(UnityEngine.Object unityObject, ref SerializationData data, bool serializeUnityFields = false, SerializationContext context = null)
         {
+#if UNITY_EDITOR
+            if (data.IsPrefabInstance)
+            {
+                // Odin prefab instances using the new prefab support should never be serialized in the editor,
+                // except when we are in play mode where they are not actually prefabs and need to be able to be
+                // modified and then instantiated.
+
+                if (!IsMainUnityThread) return; // We can't even check if we are in play mode, so assume the worst and do nothing
+                if (!Application.isPlaying) return; // We are not in play mode, so don't do anything
+            }
+#endif
+
             if (unityObject == null)
             {
                 throw new ArgumentNullException("unityObject");
@@ -1063,7 +1084,7 @@ namespace Sirenix.Serialization
                 {
                     var mod = mods[i];
 
-                    if (mod.propertyPath.StartsWith(serializedDataPath, StringComparison.InvariantCulture) && object.ReferenceEquals(mod.target, prefab))
+                    if (mod.propertyPath.StartsWith(serializedDataPath, StringComparison.InvariantCulture) && object.ReferenceEquals(mod.target, prefab) && !serializedDataPath.Contains("PrefabModificationLayers"))
                     {
                         mods.RemoveAt(i);
                         i--;
@@ -1362,301 +1383,437 @@ namespace Sirenix.Serialization
                 throw new ArgumentNullException("unityObject");
             }
 
-            if (isPrefabData && prefabInstanceUnityObjects == null)
+            Cache<DeserializationContext> cachedContext = null;
+
+            try
             {
-                prefabInstanceUnityObjects = new List<UnityEngine.Object>(); // There's likely no data at all
-            }
-
-#if UNITY_EDITOR
-            if (OdinPrefabSerializationEditorUtility.HasNewPrefabWorkflow)
-            {
-                ISupportsPrefabSerialization supporter = unityObject as ISupportsPrefabSerialization;
-
-                if (supporter != null)
+                if (context == null)
                 {
-                    var sData = supporter.SerializationData;
+                    cachedContext = Cache<DeserializationContext>.Claim();
+                    context = cachedContext;
 
-                    if (!sData.ContainsData)
+                    context.Config.SerializationPolicy = SerializationPolicies.Unity;
+
+                    /* If the config instance is not loaded (it should usually be, but in rare cases
+                     * it's not), we must not ask for it, as we are not allowed to load from resources
+                     * or the asset database during some serialization callbacks.
+                     *
+                     * (Trying to do that causes internal Unity errors and potentially even crashes.)
+                     *
+                     * If it's not loaded, we fall back to default values, since there's no other choice.
+                     */
+                    if (GlobalSerializationConfig.HasInstanceLoaded)
                     {
-                        return;
-                    }
-
-                    sData.Prefab = null;
-                    supporter.SerializationData = sData;
-                }
-            }
-
-            // TODO: This fix needs to be applied for edge-cases! But we also need a way to only do it while in the Editor! and if UNITY_EDITOR is not enough.
-            //Debug.Log("Deserializing" + new System.Diagnostics.StackTrace().ToString(), unityObject);
-            //var prefabDataObject = data.Prefab as ISupportsPrefabSerialization;
-            //if (prefabDataObject != null && data.PrefabModifications != null && UnityEditor.AssetDatabase.Contains(data.Prefab))
-            //{
-            //    // In some rare cases, prefab instances can become corrupted if there somehow end up being applied bad prefab modifications
-            //    // for the JSON, Nodes or Binary data fields. This will of course result in a corrupted data-stream, and if the resilient serialization mode fails
-            //    // to be resilient, scenes will also give an error when opnened, and the object won't fix itself.
-            //    // How these bad Unity prefab modifications ends up there in the first place, is a mystery.
-
-            //    // ----------------
-            //    // But it's easy enought to replicate:
-            //    // 1. Create a game object with a SerializedMonoBehaviour containing a dictionary.
-            //    // 2. Make it a prefab
-            //    // 3. Instantiate the dictionary and add an entry to it in the prefab instance and hit apply (ONCE)
-            //    // 4. Now totally random prefab modifications are applied to the SerializedNodes data member: https://jumpshare.com/v/eiZv39CUJKOuNCVhMu83
-            //    //     - These are harmless in many situations, as the values are exactly the same as in the prefab: https://jumpshare.com/v/aMlA0dD7gsA2uvO5ot48
-            //    //     - Furthermore, when hitting apply again, all of the bad modifications go away.
-            //    // 5. But if we instead of hitting apply again, save the scene, and remove the dictionary member from the c# class,
-            //    //    we're now left with permanent modifications to the data.SerializaitionNodes, which will result
-            //    //    in a corrupted data stream, as we continue to modify the prefab it self.
-            //    // 6. Set the serialization mode to log warnings and errors, remove the dictioanry from the c# class and open the scene again.
-            //    // ----------------
-
-            //    // Here we make sure that we deserialize the object using the data from the prefab, and override any potentially corrupted data.
-            //    // In prefab instances, the only thing we care about are the actual prefab-modifications (data.PrefabModifications and data.PrefabModificationsReferencedUnityObjects)
-            //    // This fix will also remove any corruped data, and trigger Unity to remove all bad prefab modifications.
-            //    var prefabData = prefabDataObject.SerializationData;
-            //    if (prefabData.ContainsData)
-            //    {
-            //        data.SerializedFormat = prefabData.SerializedFormat;
-            //        data.SerializationNodes = prefabData.SerializationNodes ?? new List<SerializationNode>();
-            //        data.ReferencedUnityObjects = prefabData.ReferencedUnityObjects ?? new List<UnityEngine.Object>();
-            //        data.SerializedBytesString = prefabData.SerializedBytesString ?? "";
-            //        data.SerializedBytes = prefabData.SerializedBytes ?? new byte[0];
-            //    }
-            //}
-#endif
-
-            if ((data.SerializedBytes != null && data.SerializedBytes.Length > 0) && (data.SerializationNodes == null || data.SerializationNodes.Count == 0))
-            {
-                // If it happens that we have bytes in the serialized bytes array
-                // then we deserialize from that instead.
-
-                // This happens often in play mode, when instantiating, since we
-                // are emulating build behaviour.
-
-                if (data.SerializedFormat == DataFormat.Nodes)
-                {
-                    // The stored format says nodes, but there is no serialized node data.
-                    // Figure out what format the serialized bytes are in, and deserialize that format instead
-                    
-                    DataFormat formatGuess = data.SerializedBytes[0] == '{' ? DataFormat.JSON : DataFormat.Binary;
-
-                    try
-                    {
-                        var bytesStr = ProperBitConverter.BytesToHexString(data.SerializedBytes);
-                        Debug.LogWarning("Serialization data has only bytes stored, but the serialized format is marked as being 'Nodes', which is incompatible with data stored as a byte array. Based on the appearance of the serialized bytes, Odin has guessed that the data format is '" + formatGuess + "', and will attempt to deserialize the bytes using that format. The serialized bytes follow, converted to a hex string: " + bytesStr);
-                    }
-                    catch { }
-
-                    UnitySerializationUtility.DeserializeUnityObject(unityObject, ref data.SerializedBytes, ref data.ReferencedUnityObjects, formatGuess, context);
-                }
-                else
-                {
-                    UnitySerializationUtility.DeserializeUnityObject(unityObject, ref data.SerializedBytes, ref data.ReferencedUnityObjects, data.SerializedFormat, context);
-                }
-
-                // If there are any prefab modifications, we should *always* apply those
-                ApplyPrefabModifications(unityObject, data.PrefabModifications, data.PrefabModificationsReferencedUnityObjects);
-            }
-            else
-            {
-                Cache<DeserializationContext> cachedContext = null;
-
-                try
-                {
-                    if (context == null)
-                    {
-                        cachedContext = Cache<DeserializationContext>.Claim();
-                        context = cachedContext;
-
-                        context.Config.SerializationPolicy = SerializationPolicies.Unity;
-
-                        /* If the config instance is not loaded (it should usually be, but in rare cases
-                         * it's not), we must not ask for it, as we are not allowed to load from resources
-                         * or the asset database during some serialization callbacks.
-                         *
-                         * (Trying to do that causes internal Unity errors and potentially even crashes.)
-                         *
-                         * If it's not loaded, we fall back to default values, since there's no other choice.
-                         */
-                        if (GlobalSerializationConfig.HasInstanceLoaded)
-                        {
-                            //Debug.Log("Deserializing " + unityObject.GetType().Name + " WITH loaded!");
-                            context.Config.DebugContext.ErrorHandlingPolicy = GlobalSerializationConfig.Instance.ErrorHandlingPolicy;
-                            context.Config.DebugContext.LoggingPolicy = GlobalSerializationConfig.Instance.LoggingPolicy;
-                            context.Config.DebugContext.Logger = GlobalSerializationConfig.Instance.Logger;
-                        }
-                        else
-                        {
-                            //Debug.Log("Deserializing " + unityObject.GetType().Name + " WITHOUT loaded!");
-                            context.Config.DebugContext.ErrorHandlingPolicy = ErrorHandlingPolicy.Resilient;
-                            context.Config.DebugContext.LoggingPolicy = LoggingPolicy.LogErrors;
-                            context.Config.DebugContext.Logger = DefaultLoggers.UnityLogger;
-                        }
-                    }
-
-                    // If we have a policy override, use that
-                    {
-                        IOverridesSerializationPolicy policyOverride = unityObject as IOverridesSerializationPolicy;
-
-                        if (policyOverride != null)
-                        {
-                            var serializationPolicy = policyOverride.SerializationPolicy;
-
-                            if (serializationPolicy != null)
-                            {
-                                context.Config.SerializationPolicy = serializationPolicy;
-                            }
-                        }
-
-                    }
-
-                    if (!isPrefabData && !data.Prefab.SafeIsUnityNull())
-                    {
-                        if (data.Prefab is ISupportsPrefabSerialization)
-                        {
-                            if (object.ReferenceEquals(data.Prefab, unityObject) && data.PrefabModifications != null && data.PrefabModifications.Count > 0)
-                            {
-                                // We are deserializing a prefab, which has *just* had changes applied
-                                // from an instance of itself.
-                                //
-                                // This is the only place, anywhere, where we can detect this happening
-                                // so we need to register it, so the prefab instance that just applied
-                                // its values knows to wipe all of its modifications clean.
-
-                                // However, we only do this in the editor. If it happens outside of the
-                                // editor it would be deeply strange, but we shouldn't correct anything
-                                // in that case as it makes no sense.
-
-#if UNITY_EDITOR
-                                lock (PrefabDeserializeUtility.DeserializePrefabs_LOCK)
-                                {
-                                    PrefabDeserializeUtility.PrefabsWithValuesApplied.Add(unityObject);
-                                }
-#endif
-                            }
-                            else
-                            {
-                                // We are dealing with a prefab instance, which is a special bail-out case
-                                SerializationData prefabData = (data.Prefab as ISupportsPrefabSerialization).SerializationData;
-
-#if UNITY_EDITOR
-                                lock (PrefabDeserializeUtility.DeserializePrefabs_LOCK)
-                                {
-                                    // Only perform this check in the editor, as we are never dealing with a prefab
-                                    // instance outside of the editor - even if the serialized data is weird
-                                    if (PrefabDeserializeUtility.PrefabsWithValuesApplied.Contains(data.Prefab))
-                                    {
-                                        // Our prefab has had values applied; now to check if the object we're
-                                        // deserializing was the one to apply those values. If it is, then we
-                                        // have to wipe all of this object's prefab modifications clean.
-                                        //
-                                        // So far, the only way we know how to do that, is checking whether this
-                                        // object is currently selected.
-
-                                        if (PrefabSelectionTracker.IsCurrentlySelectedPrefabRoot(unityObject))
-                                        {
-                                            PrefabDeserializeUtility.PrefabsWithValuesApplied.Remove(data.Prefab);
-
-                                            List<PrefabModification> newModifications = null;
-                                            HashSet<object> keep = PrefabDeserializeUtility.GetSceneObjectsToKeepSet(unityObject, false);
-
-                                            if (data.PrefabModificationsReferencedUnityObjects.Count > 0 && keep != null && keep.Count > 0)
-                                            {
-                                                newModifications = DeserializePrefabModifications(data.PrefabModifications, data.PrefabModificationsReferencedUnityObjects);
-                                                newModifications.RemoveAll(n => object.ReferenceEquals(n.ModifiedValue, null) || !keep.Contains(n.ModifiedValue));
-                                            }
-                                            else
-                                            {
-                                                if (data.PrefabModifications != null)
-                                                {
-                                                    data.PrefabModifications.Clear();
-                                                }
-
-                                                if (data.PrefabModificationsReferencedUnityObjects != null)
-                                                {
-                                                    data.PrefabModificationsReferencedUnityObjects.Clear();
-                                                }
-                                            }
-
-                                            newModifications = newModifications ?? new List<PrefabModification>();
-                                            PrefabModificationCache.CachePrefabModifications(unityObject, newModifications);
-
-                                            RegisterPrefabModificationsChange(unityObject, newModifications);
-                                        }
-                                    }
-                                }
-#endif
-
-                                if (!prefabData.ContainsData)
-                                {
-                                    // Sometimes, the prefab hasn't actually been deserialized yet, because
-                                    // Unity doesn't do anything in a sensible way at all.
-                                    //
-                                    // In this case, we have to deserialize from our own data, and just
-                                    // pretend it's the prefab's data. We can just hope Unity hasn't messed
-                                    // with the serialized data; it *should* be the same on this instance as
-                                    // it is on the prefab itself.
-                                    //
-                                    // This case occurs often during editor recompile reloads.
-
-                                    DeserializeUnityObject(unityObject, ref data, context, isPrefabData: true, prefabInstanceUnityObjects: data.ReferencedUnityObjects);
-                                }
-                                else
-                                {
-                                    // Deserialize the current object with the prefab's data
-                                    DeserializeUnityObject(unityObject, ref prefabData, context, isPrefabData: true, prefabInstanceUnityObjects: data.ReferencedUnityObjects);
-                                }
-
-                                // Then apply the prefab modifications using the deserialization context
-                                ApplyPrefabModifications(unityObject, data.PrefabModifications, data.PrefabModificationsReferencedUnityObjects);
-
-                                return; // Buh bye
-                            }
-                        }
-                        // A straight UnityEngine.Object instance means that the type has been lost to Unity due to a deleted or renamed script
-                        // We shouldn't complain in this case, as Unity itself will make it clear to the user that there is something wrong.
-                        else if (data.Prefab.GetType() != typeof(UnityEngine.Object))
-                        {
-                            Debug.LogWarning("The type " + data.Prefab.GetType().GetNiceName() + " no longer supports special prefab serialization (the interface " + typeof(ISupportsPrefabSerialization).GetNiceName() + ") upon deserialization of an instance of a prefab; prefab data may be lost. Has a type been lost?");
-                        }
-                    }
-
-                    var unityObjects = isPrefabData ? prefabInstanceUnityObjects : data.ReferencedUnityObjects;
-
-                    if (data.SerializedFormat == DataFormat.Nodes)
-                    {
-                        // Special case for node format
-                        using (var reader = new SerializationNodeDataReader(context))
-                        using (var resolver = Cache<UnityReferenceResolver>.Claim())
-                        {
-                            resolver.Value.SetReferencedUnityObjects(unityObjects);
-                            context.IndexReferenceResolver = resolver.Value;
-
-                            reader.Nodes = data.SerializationNodes;
-
-                            UnitySerializationUtility.DeserializeUnityObject(unityObject, reader);
-                        }
-                    }
-                    else if (data.SerializedBytes != null && data.SerializedBytes.Length > 0)
-                    {
-                        UnitySerializationUtility.DeserializeUnityObject(unityObject, ref data.SerializedBytes, ref unityObjects, data.SerializedFormat, context);
+                        //Debug.Log("Deserializing " + unityObject.GetType().Name + " WITH loaded!");
+                        context.Config.DebugContext.ErrorHandlingPolicy = GlobalSerializationConfig.Instance.ErrorHandlingPolicy;
+                        context.Config.DebugContext.LoggingPolicy = GlobalSerializationConfig.Instance.LoggingPolicy;
+                        context.Config.DebugContext.Logger = GlobalSerializationConfig.Instance.Logger;
                     }
                     else
                     {
-                        UnitySerializationUtility.DeserializeUnityObject(unityObject, ref data.SerializedBytesString, ref unityObjects, data.SerializedFormat, context);
+                        //Debug.Log("Deserializing " + unityObject.GetType().Name + " WITHOUT loaded!");
+                        context.Config.DebugContext.ErrorHandlingPolicy = ErrorHandlingPolicy.Resilient;
+                        context.Config.DebugContext.LoggingPolicy = LoggingPolicy.LogErrors;
+                        context.Config.DebugContext.Logger = DefaultLoggers.UnityLogger;
+                    }
+                }
+
+                // If we have a policy override, use that
+                {
+                    IOverridesSerializationPolicy policyOverride = unityObject as IOverridesSerializationPolicy;
+
+                    if (policyOverride != null)
+                    {
+                        var serializationPolicy = policyOverride.SerializationPolicy;
+
+                        if (serializationPolicy != null)
+                        {
+                            context.Config.SerializationPolicy = serializationPolicy;
+                        }
+                    }
+                }
+
+                if ((data.SerializedBytes != null && data.SerializedBytes.Length > 0) && (data.SerializationNodes == null || data.SerializationNodes.Count == 0))
+                {
+                    // If it happens that we have bytes in the serialized bytes array
+                    // then we deserialize from that instead.
+
+                    // This happens often in play mode, when instantiating, since we
+                    // are emulating build behaviour.
+
+                    if (data.SerializedFormat == DataFormat.Nodes)
+                    {
+                        // The stored format says nodes, but there is no serialized node data.
+                        // Figure out what format the serialized bytes are in, and deserialize that format instead
+
+                        DataFormat formatGuess = data.SerializedBytes[0] == '{' ? DataFormat.JSON : DataFormat.Binary;
+
+                        try
+                        {
+                            var bytesStr = ProperBitConverter.BytesToHexString(data.SerializedBytes);
+                            Debug.LogWarning("Serialization data has only bytes stored, but the serialized format is marked as being 'Nodes', which is incompatible with data stored as a byte array. Based on the appearance of the serialized bytes, Odin has guessed that the data format is '" + formatGuess + "', and will attempt to deserialize the bytes using that format. The serialized bytes follow, converted to a hex string: " + bytesStr);
+                        }
+                        catch { }
+
+                        UnitySerializationUtility.DeserializeUnityObject(unityObject, ref data.SerializedBytes, ref data.ReferencedUnityObjects, formatGuess, context);
+                    }
+                    else
+                    {
+                        UnitySerializationUtility.DeserializeUnityObject(unityObject, ref data.SerializedBytes, ref data.ReferencedUnityObjects, data.SerializedFormat, context);
                     }
 
-                    // We may have a prefab that has had changes applied to it; either way, apply the stored modifications.
+                    // If there are any prefab modifications, we should *always* apply those
                     ApplyPrefabModifications(unityObject, data.PrefabModifications, data.PrefabModificationsReferencedUnityObjects);
                 }
-                finally
+                else if (data.SerializedFormat == DataFormat.Nodes)
                 {
-                    if (cachedContext != null)
+                    // Special case for node format
+                    using (var reader = new SerializationNodeDataReader(context))
+                    using (var resolver = Cache<UnityReferenceResolver>.Claim())
                     {
-                        Cache<DeserializationContext>.Release(cachedContext);
+                        resolver.Value.SetReferencedUnityObjects(data.ReferencedUnityObjects);
+                        context.IndexReferenceResolver = resolver.Value;
+
+                        reader.Nodes = data.SerializationNodes;
+
+                        UnitySerializationUtility.DeserializeUnityObject(unityObject, reader);
                     }
                 }
+                else if (data.SerializedBytes != null && data.SerializedBytes.Length > 0)
+                {
+                    UnitySerializationUtility.DeserializeUnityObject(unityObject, ref data.SerializedBytes, ref data.ReferencedUnityObjects, data.SerializedFormat, context);
+                }
+                else
+                {
+                    UnitySerializationUtility.DeserializeUnityObject(unityObject, ref data.SerializedBytesString, ref data.ReferencedUnityObjects, data.SerializedFormat, context);
+                }
             }
+            finally
+            {
+                if (cachedContext != null)
+                {
+                    Cache<DeserializationContext>.Release(cachedContext);
+                }
+            }
+
+            if (data.PrefabModifications != null)
+            {
+                ApplyPrefabModifications(unityObject, data.PrefabModifications, data.PrefabModificationsReferencedUnityObjects);
+            }
+
+            if (data.PrefabModificationLayers != null)
+            {
+                for (int i = 0; i < data.PrefabModificationLayers.Count; i++)
+                {
+                    var layer = data.PrefabModificationLayers[i];
+
+                    ApplyPrefabModifications(unityObject, layer.Modifications, layer.ReferencedUnityObjects);
+                }
+            }
+
+            return;
+
+            // Old crap below
+
+//            if (unityObject == null)
+//            {
+//                throw new ArgumentNullException("unityObject");
+//            }
+
+//            if (isPrefabData && prefabInstanceUnityObjects == null)
+//            {
+//                prefabInstanceUnityObjects = new List<UnityEngine.Object>(); // There's likely no data at all
+//            }
+
+//#if UNITY_EDITOR
+//            if (OdinPrefabSerializationEditorUtility.HasNewPrefabWorkflow)
+//            {
+//                ISupportsPrefabSerialization supporter = unityObject as ISupportsPrefabSerialization;
+
+//                if (supporter != null)
+//                {
+//                    var sData = supporter.SerializationData;
+
+//                    if (!sData.ContainsData)
+//                    {
+//                        return;
+//                    }
+
+//                    sData.Prefab = null;
+//                    supporter.SerializationData = sData;
+//                }
+//            }
+
+//            // TODO: This fix needs to be applied for edge-cases! But we also need a way to only do it while in the Editor! and if UNITY_EDITOR is not enough.
+//            //Debug.Log("Deserializing" + new System.Diagnostics.StackTrace().ToString(), unityObject);
+//            //var prefabDataObject = data.Prefab as ISupportsPrefabSerialization;
+//            //if (prefabDataObject != null && data.PrefabModifications != null && UnityEditor.AssetDatabase.Contains(data.Prefab))
+//            //{
+//            //    // In some rare cases, prefab instances can become corrupted if there somehow end up being applied bad prefab modifications
+//            //    // for the JSON, Nodes or Binary data fields. This will of course result in a corrupted data-stream, and if the resilient serialization mode fails
+//            //    // to be resilient, scenes will also give an error when opnened, and the object won't fix itself.
+//            //    // How these bad Unity prefab modifications ends up there in the first place, is a mystery.
+
+//            //    // ----------------
+//            //    // But it's easy enought to replicate:
+//            //    // 1. Create a game object with a SerializedMonoBehaviour containing a dictionary.
+//            //    // 2. Make it a prefab
+//            //    // 3. Instantiate the dictionary and add an entry to it in the prefab instance and hit apply (ONCE)
+//            //    // 4. Now totally random prefab modifications are applied to the SerializedNodes data member: https://jumpshare.com/v/eiZv39CUJKOuNCVhMu83
+//            //    //     - These are harmless in many situations, as the values are exactly the same as in the prefab: https://jumpshare.com/v/aMlA0dD7gsA2uvO5ot48
+//            //    //     - Furthermore, when hitting apply again, all of the bad modifications go away.
+//            //    // 5. But if we instead of hitting apply again, save the scene, and remove the dictionary member from the c# class,
+//            //    //    we're now left with permanent modifications to the data.SerializaitionNodes, which will result
+//            //    //    in a corrupted data stream, as we continue to modify the prefab it self.
+//            //    // 6. Set the serialization mode to log warnings and errors, remove the dictioanry from the c# class and open the scene again.
+//            //    // ----------------
+
+//            //    // Here we make sure that we deserialize the object using the data from the prefab, and override any potentially corrupted data.
+//            //    // In prefab instances, the only thing we care about are the actual prefab-modifications (data.PrefabModifications and data.PrefabModificationsReferencedUnityObjects)
+//            //    // This fix will also remove any corruped data, and trigger Unity to remove all bad prefab modifications.
+//            //    var prefabData = prefabDataObject.SerializationData;
+//            //    if (prefabData.ContainsData)
+//            //    {
+//            //        data.SerializedFormat = prefabData.SerializedFormat;
+//            //        data.SerializationNodes = prefabData.SerializationNodes ?? new List<SerializationNode>();
+//            //        data.ReferencedUnityObjects = prefabData.ReferencedUnityObjects ?? new List<UnityEngine.Object>();
+//            //        data.SerializedBytesString = prefabData.SerializedBytesString ?? "";
+//            //        data.SerializedBytes = prefabData.SerializedBytes ?? new byte[0];
+//            //    }
+//            //}
+//#endif
+
+//            if ((data.SerializedBytes != null && data.SerializedBytes.Length > 0) && (data.SerializationNodes == null || data.SerializationNodes.Count == 0))
+//            {
+//                // If it happens that we have bytes in the serialized bytes array
+//                // then we deserialize from that instead.
+
+//                // This happens often in play mode, when instantiating, since we
+//                // are emulating build behaviour.
+
+//                if (data.SerializedFormat == DataFormat.Nodes)
+//                {
+//                    // The stored format says nodes, but there is no serialized node data.
+//                    // Figure out what format the serialized bytes are in, and deserialize that format instead
+                    
+//                    DataFormat formatGuess = data.SerializedBytes[0] == '{' ? DataFormat.JSON : DataFormat.Binary;
+
+//                    try
+//                    {
+//                        var bytesStr = ProperBitConverter.BytesToHexString(data.SerializedBytes);
+//                        Debug.LogWarning("Serialization data has only bytes stored, but the serialized format is marked as being 'Nodes', which is incompatible with data stored as a byte array. Based on the appearance of the serialized bytes, Odin has guessed that the data format is '" + formatGuess + "', and will attempt to deserialize the bytes using that format. The serialized bytes follow, converted to a hex string: " + bytesStr);
+//                    }
+//                    catch { }
+
+//                    UnitySerializationUtility.DeserializeUnityObject(unityObject, ref data.SerializedBytes, ref data.ReferencedUnityObjects, formatGuess, context);
+//                }
+//                else
+//                {
+//                    UnitySerializationUtility.DeserializeUnityObject(unityObject, ref data.SerializedBytes, ref data.ReferencedUnityObjects, data.SerializedFormat, context);
+//                }
+
+//                // If there are any prefab modifications, we should *always* apply those
+//                ApplyPrefabModifications(unityObject, data.PrefabModifications, data.PrefabModificationsReferencedUnityObjects);
+//            }
+//            else
+//            {
+//                Cache<DeserializationContext> cachedContext = null;
+
+//                try
+//                {
+//                    if (context == null)
+//                    {
+//                        cachedContext = Cache<DeserializationContext>.Claim();
+//                        context = cachedContext;
+
+//                        context.Config.SerializationPolicy = SerializationPolicies.Unity;
+
+//                        /* If the config instance is not loaded (it should usually be, but in rare cases
+//                         * it's not), we must not ask for it, as we are not allowed to load from resources
+//                         * or the asset database during some serialization callbacks.
+//                         *
+//                         * (Trying to do that causes internal Unity errors and potentially even crashes.)
+//                         *
+//                         * If it's not loaded, we fall back to default values, since there's no other choice.
+//                         */
+//                        if (GlobalSerializationConfig.HasInstanceLoaded)
+//                        {
+//                            //Debug.Log("Deserializing " + unityObject.GetType().Name + " WITH loaded!");
+//                            context.Config.DebugContext.ErrorHandlingPolicy = GlobalSerializationConfig.Instance.ErrorHandlingPolicy;
+//                            context.Config.DebugContext.LoggingPolicy = GlobalSerializationConfig.Instance.LoggingPolicy;
+//                            context.Config.DebugContext.Logger = GlobalSerializationConfig.Instance.Logger;
+//                        }
+//                        else
+//                        {
+//                            //Debug.Log("Deserializing " + unityObject.GetType().Name + " WITHOUT loaded!");
+//                            context.Config.DebugContext.ErrorHandlingPolicy = ErrorHandlingPolicy.Resilient;
+//                            context.Config.DebugContext.LoggingPolicy = LoggingPolicy.LogErrors;
+//                            context.Config.DebugContext.Logger = DefaultLoggers.UnityLogger;
+//                        }
+//                    }
+
+//                    // If we have a policy override, use that
+//                    {
+//                        IOverridesSerializationPolicy policyOverride = unityObject as IOverridesSerializationPolicy;
+
+//                        if (policyOverride != null)
+//                        {
+//                            var serializationPolicy = policyOverride.SerializationPolicy;
+
+//                            if (serializationPolicy != null)
+//                            {
+//                                context.Config.SerializationPolicy = serializationPolicy;
+//                            }
+//                        }
+//                    }
+
+//                    if (!isPrefabData && !data.Prefab.SafeIsUnityNull())
+//                    {
+//                        if (data.Prefab is ISupportsPrefabSerialization)
+//                        {
+//                            if (object.ReferenceEquals(data.Prefab, unityObject) && data.PrefabModifications != null && data.PrefabModifications.Count > 0)
+//                            {
+//                                // We are deserializing a prefab, which has *just* had changes applied
+//                                // from an instance of itself.
+//                                //
+//                                // This is the only place, anywhere, where we can detect this happening
+//                                // so we need to register it, so the prefab instance that just applied
+//                                // its values knows to wipe all of its modifications clean.
+
+//                                // However, we only do this in the editor. If it happens outside of the
+//                                // editor it would be deeply strange, but we shouldn't correct anything
+//                                // in that case as it makes no sense.
+
+//#if UNITY_EDITOR
+//                                lock (PrefabDeserializeUtility.DeserializePrefabs_LOCK)
+//                                {
+//                                    PrefabDeserializeUtility.PrefabsWithValuesApplied.Add(unityObject);
+//                                }
+//#endif
+//                            }
+//                            else
+//                            {
+//                                // We are dealing with a prefab instance, which is a special bail-out case
+//                                SerializationData prefabData = (data.Prefab as ISupportsPrefabSerialization).SerializationData;
+
+//#if UNITY_EDITOR
+//                                lock (PrefabDeserializeUtility.DeserializePrefabs_LOCK)
+//                                {
+//                                    // Only perform this check in the editor, as we are never dealing with a prefab
+//                                    // instance outside of the editor - even if the serialized data is weird
+//                                    if (PrefabDeserializeUtility.PrefabsWithValuesApplied.Contains(data.Prefab))
+//                                    {
+//                                        // Our prefab has had values applied; now to check if the object we're
+//                                        // deserializing was the one to apply those values. If it is, then we
+//                                        // have to wipe all of this object's prefab modifications clean.
+//                                        //
+//                                        // So far, the only way we know how to do that, is checking whether this
+//                                        // object is currently selected.
+
+//                                        if (PrefabSelectionTracker.IsCurrentlySelectedPrefabRoot(unityObject))
+//                                        {
+//                                            PrefabDeserializeUtility.PrefabsWithValuesApplied.Remove(data.Prefab);
+
+//                                            List<PrefabModification> newModifications = null;
+//                                            HashSet<object> keep = PrefabDeserializeUtility.GetSceneObjectsToKeepSet(unityObject, false);
+
+//                                            if (data.PrefabModificationsReferencedUnityObjects.Count > 0 && keep != null && keep.Count > 0)
+//                                            {
+//                                                newModifications = DeserializePrefabModifications(data.PrefabModifications, data.PrefabModificationsReferencedUnityObjects);
+//                                                newModifications.RemoveAll(n => object.ReferenceEquals(n.ModifiedValue, null) || !keep.Contains(n.ModifiedValue));
+//                                            }
+//                                            else
+//                                            {
+//                                                if (data.PrefabModifications != null)
+//                                                {
+//                                                    data.PrefabModifications.Clear();
+//                                                }
+
+//                                                if (data.PrefabModificationsReferencedUnityObjects != null)
+//                                                {
+//                                                    data.PrefabModificationsReferencedUnityObjects.Clear();
+//                                                }
+//                                            }
+
+//                                            newModifications = newModifications ?? new List<PrefabModification>();
+//                                            PrefabModificationCache.CachePrefabModifications(unityObject, newModifications);
+
+//                                            RegisterPrefabModificationsChange(unityObject, newModifications);
+//                                        }
+//                                    }
+//                                }
+//#endif
+
+//                                if (!prefabData.ContainsData)
+//                                {
+//                                    // Sometimes, the prefab hasn't actually been deserialized yet, because
+//                                    // Unity doesn't do anything in a sensible way at all.
+//                                    //
+//                                    // In this case, we have to deserialize from our own data, and just
+//                                    // pretend it's the prefab's data. We can just hope Unity hasn't messed
+//                                    // with the serialized data; it *should* be the same on this instance as
+//                                    // it is on the prefab itself.
+//                                    //
+//                                    // This case occurs often during editor recompile reloads.
+
+//                                    DeserializeUnityObject(unityObject, ref data, context, isPrefabData: true, prefabInstanceUnityObjects: data.ReferencedUnityObjects);
+//                                }
+//                                else
+//                                {
+//                                    // Deserialize the current object with the prefab's data
+//                                    DeserializeUnityObject(unityObject, ref prefabData, context, isPrefabData: true, prefabInstanceUnityObjects: data.ReferencedUnityObjects);
+//                                }
+
+//                                // Then apply the prefab modifications using the deserialization context
+//                                ApplyPrefabModifications(unityObject, data.PrefabModifications, data.PrefabModificationsReferencedUnityObjects);
+
+//                                return; // Buh bye
+//                            }
+//                        }
+//                        // A straight UnityEngine.Object instance means that the type has been lost to Unity due to a deleted or renamed script
+//                        // We shouldn't complain in this case, as Unity itself will make it clear to the user that there is something wrong.
+//                        else if (data.Prefab.GetType() != typeof(UnityEngine.Object))
+//                        {
+//                            Debug.LogWarning("The type " + data.Prefab.GetType().GetNiceName() + " no longer supports special prefab serialization (the interface " + typeof(ISupportsPrefabSerialization).GetNiceName() + ") upon deserialization of an instance of a prefab; prefab data may be lost. Has a type been lost?");
+//                        }
+//                    }
+
+//                    var unityObjects = isPrefabData ? prefabInstanceUnityObjects : data.ReferencedUnityObjects;
+
+//                    if (data.SerializedFormat == DataFormat.Nodes)
+//                    {
+//                        // Special case for node format
+//                        using (var reader = new SerializationNodeDataReader(context))
+//                        using (var resolver = Cache<UnityReferenceResolver>.Claim())
+//                        {
+//                            resolver.Value.SetReferencedUnityObjects(unityObjects);
+//                            context.IndexReferenceResolver = resolver.Value;
+
+//                            reader.Nodes = data.SerializationNodes;
+
+//                            UnitySerializationUtility.DeserializeUnityObject(unityObject, reader);
+//                        }
+//                    }
+//                    else if (data.SerializedBytes != null && data.SerializedBytes.Length > 0)
+//                    {
+//                        UnitySerializationUtility.DeserializeUnityObject(unityObject, ref data.SerializedBytes, ref unityObjects, data.SerializedFormat, context);
+//                    }
+//                    else
+//                    {
+//                        UnitySerializationUtility.DeserializeUnityObject(unityObject, ref data.SerializedBytesString, ref unityObjects, data.SerializedFormat, context);
+//                    }
+
+//                    // We may have a prefab that has had changes applied to it; either way, apply the stored modifications.
+//                    ApplyPrefabModifications(unityObject, data.PrefabModifications, data.PrefabModificationsReferencedUnityObjects);
+//                }
+//                finally
+//                {
+//                    if (cachedContext != null)
+//                    {
+//                        Cache<DeserializationContext>.Release(cachedContext);
+//                    }
+//                }
+//            }
         }
 
         /// <summary>

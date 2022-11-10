@@ -30,10 +30,28 @@ namespace Sirenix.OdinInspector
         [SerializeField, HideInInspector]
         private SerializationData serializationData;
 
-        SerializationData ISupportsPrefabSerialization.SerializationData { get { return this.serializationData; } set { this.serializationData = value; } }
+        SerializationData ISupportsPrefabSerialization.SerializationData { get { return this.serializationData; } 
+            set 
+            { 
+                if (this.serializationData.PrefabModificationLayers?.Count > 0 && value.PrefabModificationLayers?.Count == 0)
+                {
+                    Debug.Log("Why is this happening");
+                }
+
+                this.serializationData = value; 
+            
+            } 
+        }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize()
         {
+            if (UnitySerializationUtility.IsMainUnityThread && name == "Prefab A Variant")
+            {
+                var json = JsonUtility.ToJson(this.serializationData);
+
+                Debug.Log("Deserialization: " + json);
+            }
+
             UnitySerializationUtility.DeserializeUnityObject(this, ref this.serializationData);
             this.OnAfterDeserialize();
         }
