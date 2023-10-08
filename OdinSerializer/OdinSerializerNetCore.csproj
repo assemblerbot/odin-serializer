@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
 	<OutputPath>bin\Release Disable Unity JIT Core\</OutputPath>
     <DefineConstants>DISABLE_UNITY;CAN_EMIT;NET_CORE</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -10,6 +10,8 @@
 	<AppDesignerFolder>Properties</AppDesignerFolder>
 	<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>OdinSerializer</AssemblyName>
+    <LangVersion>11</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   
   <ItemGroup>
