@@ -29,6 +29,10 @@ Global
 		{F1111936-6086-412C-AB26-D7D8D3448A2A}.Release Editor|Any CPU.Build.0 = Release Editor|Any CPU
 		{F1111936-6086-412C-AB26-D7D8D3448A2A}.Release JIT|Any CPU.ActiveCfg = Release JIT|Any CPU
 		{F1111936-6086-412C-AB26-D7D8D3448A2A}.Release JIT|Any CPU.Build.0 = Release JIT|Any CPU
+		{FD3CE04D-302F-42A1-A070-C3E5229E5272}.Debug Editor|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD3CE04D-302F-42A1-A070-C3E5229E5272}.Debug Editor|Any CPU.Build.0 = Debug|Any CPU
+		{FD3CE04D-302F-42A1-A070-C3E5229E5272}.Release Editor|Any CPU.ActiveCfg = Release|Any CPU
+		{FD3CE04D-302F-42A1-A070-C3E5229E5272}.Release Editor|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -449,15 +449,15 @@ namespace OdinSerializer
 
         public WeakBaseFormatter(Type serializedType)
         {
-            this.SerializedType = serializedType;
-            this.ImplementsISerializationCallbackReceiver = this.SerializedType.ImplementsOrInherits(typeof(UnityEngine.ISerializationCallbackReceiver));
-            this.ImplementsIDeserializationCallback = this.SerializedType.ImplementsOrInherits(typeof(IDeserializationCallback));
-            this.ImplementsIObjectReference = this.SerializedType.ImplementsOrInherits(typeof(IObjectReference));
+            this.SerializedType                           = serializedType;
+            this.ImplementsISerializationCallbackReceiver = false;  //this.SerializedType.ImplementsOrInherits(typeof(UnityEngine.ISerializationCallbackReceiver));
+            this.ImplementsIDeserializationCallback       = this.SerializedType.ImplementsOrInherits(typeof(IDeserializationCallback));
+            this.ImplementsIObjectReference               = this.SerializedType.ImplementsOrInherits(typeof(IObjectReference));
 
-            if (this.SerializedType.ImplementsOrInherits(typeof(UnityEngine.Object)))
-            {
-                DefaultLoggers.DefaultLogger.LogWarning("A formatter has been created for the UnityEngine.Object type " + this.SerializedType.Name + " - this is *strongly* discouraged. Unity should be allowed to handle serialization and deserialization of its own weird objects. Remember to serialize with a UnityReferenceResolver as the external index reference resolver in the serialization context.\n\n Stacktrace: " + new System.Diagnostics.StackTrace().ToString());
-            }
+            // if (this.SerializedType.ImplementsOrInherits(typeof(UnityEngine.Object)))
+            // {
+            //     DefaultLoggers.DefaultLogger.LogWarning("A formatter has been created for the UnityEngine.Object type " + this.SerializedType.Name + " - this is *strongly* discouraged. Unity should be allowed to handle serialization and deserialization of its own weird objects. Remember to serialize with a UnityReferenceResolver as the external index reference resolver in the serialization context.\n\n Stacktrace: " + new System.Diagnostics.StackTrace().ToString());
+            // }
 
             MethodInfo[] methods = this.SerializedType.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
@@ -536,20 +536,19 @@ namespace OdinSerializer
                 }
             }
 
-            if (ImplementsISerializationCallbackReceiver)
-            {
-                try
-                {
-
-                    UnityEngine.ISerializationCallbackReceiver v = value as UnityEngine.ISerializationCallbackReceiver;
-                    v.OnBeforeSerialize();
-                    value = v;
-                }
-                catch (Exception ex)
-                {
-                    context.Config.DebugContext.LogException(ex);
-                }
-            }
+            // if (ImplementsISerializationCallbackReceiver)
+            // {
+            //     try
+            //     {
+            //         UnityEngine.ISerializationCallbackReceiver v = value as UnityEngine.ISerializationCallbackReceiver;
+            //         v.OnBeforeSerialize();
+            //         value = v;
+            //     }
+            //     catch (Exception ex)
+            //     {
+            //         context.Config.DebugContext.LogException(ex);
+            //     }
+            // }
 
             try
             {
@@ -651,19 +650,19 @@ namespace OdinSerializer
                     value = v;
                 }
 
-                if (ImplementsISerializationCallbackReceiver)
-                {
-                    try
-                    {
-                        UnityEngine.ISerializationCallbackReceiver v = value as UnityEngine.ISerializationCallbackReceiver;
-                        v.OnAfterDeserialize();
-                        value = v;
-                    }
-                    catch (Exception ex)
-                    {
-                        context.Config.DebugContext.LogException(ex);
-                    }
-                }
+                // if (ImplementsISerializationCallbackReceiver)
+                // {
+                //     try
+                //     {
+                //         UnityEngine.ISerializationCallbackReceiver v = value as UnityEngine.ISerializationCallbackReceiver;
+                //         v.OnAfterDeserialize();
+                //         value = v;
+                //     }
+                //     catch (Exception ex)
+                //     {
+                //         context.Config.DebugContext.LogException(ex);
+                //     }
+                // }
             }
 
             return value;

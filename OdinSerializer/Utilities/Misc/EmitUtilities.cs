@@ -93,7 +93,7 @@ namespace OdinSerializer.Utilities
 #if UNITY_EDITOR
         private static Assembly EditorAssembly = typeof(UnityEditor.Editor).Assembly;
 #endif
-        private static Assembly EngineAssembly = typeof(UnityEngine.Object).Assembly;
+        private static Assembly EngineAssembly = typeof(object).Assembly; //typeof(UnityEngine.Object).Assembly;
 
         private static bool EmitIsIllegalForMember(MemberInfo member)
         {

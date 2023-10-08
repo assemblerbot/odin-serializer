@@ -16,6 +16,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+#if !DISABLE_UNITY
+
 using OdinSerializer;
 
 [assembly: RegisterFormatter(typeof(Vector2IntFormatter))]
@@ -89,3 +91,4 @@ namespace OdinSerializer
         }
     }
 }
+#endif
