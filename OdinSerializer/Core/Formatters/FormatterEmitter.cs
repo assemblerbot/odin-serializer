@@ -459,7 +459,9 @@ namespace OdinSerializer
             }
 
             // Now we need to actually create the serializer container type so we can generate the dynamic methods below without getting TypeLoadExceptions up the wazoo
-            return helperTypeBuilder.CreateType();
+            Type helperType = helperTypeBuilder.CreateType();
+            //FieldInfo? field = helperTypeBuilder.GetField("SwitchLookup"); <-- this is probable solution
+            return helperType;
         }
 
         private static void EmitReadMethodContents(
