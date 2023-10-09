@@ -242,8 +242,8 @@ namespace OdinSerializer
 
             Dictionary<Type, MethodInfo> serializerReadMethods;
             Dictionary<Type, MethodInfo> serializerWriteMethods;
-            Dictionary<Type, FieldBuilder> serializerFields;
-            FieldBuilder dictField;
+            Dictionary<Type, FieldInfo> serializerFields;
+            FieldInfo dictField;
             Dictionary<MemberInfo, List<string>> memberNames;
 
             BuildHelperType(
@@ -319,8 +319,8 @@ namespace OdinSerializer
 
             Dictionary<Type, MethodInfo> serializerReadMethods;
             Dictionary<Type, MethodInfo> serializerWriteMethods;
-            Dictionary<Type, FieldBuilder> serializerFields;
-            FieldBuilder dictField;
+            Dictionary<Type, FieldInfo> serializerFields;
+            FieldInfo dictField;
             Dictionary<MemberInfo, List<string>> memberNames;
 
             BuildHelperType(
@@ -368,8 +368,8 @@ namespace OdinSerializer
             Dictionary<string, MemberInfo> serializableMembers,
             out Dictionary<Type, MethodInfo> serializerReadMethods,
             out Dictionary<Type, MethodInfo> serializerWriteMethods,
-            out Dictionary<Type, FieldBuilder> serializerFields,
-            out FieldBuilder dictField,
+            out Dictionary<Type, FieldInfo> serializerFields,
+            out FieldInfo dictField,
             out Dictionary<MemberInfo, List<string>> memberNames)
         {
             TypeBuilder helperTypeBuilder = moduleBuilder.DefineType(helperTypeName, TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.Class);
@@ -395,9 +395,10 @@ namespace OdinSerializer
 
             serializerReadMethods = new Dictionary<Type, MethodInfo>(neededSerializers.Count);
             serializerWriteMethods = new Dictionary<Type, MethodInfo>(neededSerializers.Count);
-            serializerFields = new Dictionary<Type, FieldBuilder>(neededSerializers.Count);
+            serializerFields = new Dictionary<Type, FieldInfo>(neededSerializers.Count);
 
-            foreach (var t in neededSerializers)
+            List<(Type,string)> serializerFieldNames = new(); //<-- fix: store type-name tuples to get runtime field info at the end
+            foreach (Type t in neededSerializers)
             {
                 string name = t.GetCompilableNiceFullName() + "__Serializer";
                 int counter = 1;
@@ -413,6 +414,8 @@ namespace OdinSerializer
                 serializerReadMethods.Add(t, serializerType.GetMethod("ReadValue", Flags.InstancePublicDeclaredOnly));
                 serializerWriteMethods.Add(t, serializerType.GetMethod("WriteValue", Flags.InstancePublicDeclaredOnly, null, new[] { typeof(string), t, typeof(IDataWriter) }, null));
                 serializerFields.Add(t, helperTypeBuilder.DefineField(name, serializerType, FieldAttributes.Public | FieldAttributes.Static | FieldAttributes.InitOnly));
+
+                serializerFieldNames.Add((t, name));
             }
 
             //FieldBuilder readMethodFieldBuilder = helperTypeBuilder.DefineField("ReadMethod", readDelegateType, FieldAttributes.Public | FieldAttributes.Static | FieldAttributes.InitOnly);
@@ -459,8 +462,16 @@ namespace OdinSerializer
             }
 
             // Now we need to actually create the serializer container type so we can generate the dynamic methods below without getting TypeLoadExceptions up the wazoo
-            Type helperType = helperTypeBuilder.CreateType();
-            //FieldInfo? field = helperTypeBuilder.GetField("SwitchLookup"); <-- this is probable solution
+            Type       helperType = helperTypeBuilder.CreateType();
+            
+            // Fix - FieldInfo is get again and this time RuntimeFieldInfo is obtained
+            dictField      = helperTypeBuilder.GetField("SwitchLookup")!;
+            serializerFields.Clear();
+            foreach ((Type, string) serializerFieldName in serializerFieldNames)
+            {
+                serializerFields.Add(serializerFieldName.Item1, helperTypeBuilder.GetField(serializerFieldName.Item2)!);
+            }
+
             return helperType;
         }
 
@@ -468,7 +479,7 @@ namespace OdinSerializer
             ILGenerator gen,
             Type formattedType,
             FieldInfo dictField,
-            Dictionary<Type, FieldBuilder> serializerFields,
+            Dictionary<Type, FieldInfo> serializerFields,
             Dictionary<MemberInfo, List<string>> memberNames,
             Dictionary<Type, MethodInfo> serializerReadMethods)
         {
@@ -558,7 +569,7 @@ namespace OdinSerializer
         private static void EmitWriteMethodContents(
             ILGenerator gen,
             Type formattedType,
-            Dictionary<Type, FieldBuilder> serializerFields,
+            Dictionary<Type, FieldInfo> serializerFields,
             Dictionary<MemberInfo, List<string>> memberNames,
             Dictionary<Type, MethodInfo> serializerWriteMethods)
         {

@@ -158,7 +158,7 @@ namespace OdinSerializer
                     {
                         if (this.logger == null)
                         {
-                            this.logger = DefaultLoggers.UnityLogger;
+                            this.logger = DefaultLoggers.DefaultLogger;
                         }
                     }
                 }

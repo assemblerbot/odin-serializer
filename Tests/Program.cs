@@ -5,6 +5,48 @@ using System.Reflection.Emit;
 using OdinSerializer;
 
 [Serializable]
+public class TestClassA
+{
+	public int    IntValue;
+	public string StringValue = string.Empty;
+
+	public virtual TestClassA Init()
+	{
+		IntValue    = 2;
+		StringValue = "abc";
+		return this;
+	}
+}
+
+[Serializable]
+public class TestClassB : TestClassA
+{
+	public float FloatValue;
+
+	public override TestClassA Init()
+	{
+		FloatValue = 3;
+		return base.Init();
+	}
+}
+
+[Serializable]
+public class TestClassC
+{
+	public List<TestClassA> TestList = new();
+	public int              IntValue;
+
+	public void Init()
+	{
+		TestList.Add(new TestClassA().Init());
+		TestList.Add(new TestClassB().Init());
+		TestList.Add(new TestClassA().Init());
+		TestList.Add(new TestClassB().Init());
+		IntValue = 5;
+	}
+}
+
+[Serializable]
 public class Test1
 {
 	public int IntValue;
@@ -22,14 +64,14 @@ public class Program
 		TestEmit3();
 		Console.WriteLine("Serialize");
 		
-		Test1 test1_in = new();
+		TestClassC test1_in = new();
 		test1_in.Init();
 		byte[] json = SerializationUtility.SerializeValue(test1_in, DataFormat.JSON);
 		Console.WriteLine(System.Text.Encoding.UTF8.GetString(json));
 		
 		Console.WriteLine("Deserialize");
 		
-		Test1 test1_out = SerializationUtility.DeserializeValue<Test1>(json, DataFormat.JSON);
+		TestClassC test1_out = SerializationUtility.DeserializeValue<TestClassC>(json, DataFormat.JSON);
 		
 		Console.WriteLine("Done");
 	}
